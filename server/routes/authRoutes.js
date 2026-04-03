@@ -4,8 +4,16 @@ const passport = require("../config/passport");
 const {
   registerUser, loginUser, getMe, getAllUsers,
   sendOTP, verifyOTP, googleAuthSuccess,
+  forgotPassword, resetPassword, changePassword, updateProfile,
 } = require("../controllers/authController");
+
 const { protect } = require("../middleware/authMiddleware");
+
+// routes:
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
+router.patch("/change-password", protect, changePassword);
+router.patch("/profile", protect, updateProfile);
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);

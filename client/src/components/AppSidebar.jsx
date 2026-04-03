@@ -8,6 +8,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { UserCircle }from 'lucide-react';
 
 const AppSidebar = () => {
   const { user, logout } = useAuth();
@@ -27,6 +28,7 @@ const AppSidebar = () => {
   const links = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/my-tasks', icon: ListTodo, label: 'My Tasks' },
+    { to: '/profile', icon: UserCircle, label: 'Profile' },
     ...(isManager ? [{ to: '/all-tasks', icon: CheckSquare, label: 'All Tasks' }] : []),
     ...(isManager ? [{ to: '/create-task', icon: PlusCircle, label: 'Create Task' }] : []),
   ];

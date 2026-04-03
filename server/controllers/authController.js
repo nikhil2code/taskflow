@@ -121,7 +121,71 @@ const googleAuthSuccess = async (req, res) => {
   res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
 };
 
+const crypto = require("crypto");
+
+// @POST /api/auth/forgot-password
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: "No account with that email" });
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+  user.resetPasswordExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
+  await user.save();
+
+  const resetURL = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+  await sendOTPEmail(email, null, resetURL, user.name);
+  res.json({ message: "Password reset link sent to your email" });
+};
+
+// @POST /api/auth/reset-password/:token
+const resetPassword = async (req, res) => {
+  const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpiry: { $gt: Date.now() },
+  });
+
+  if (!user) return res.status(400).json({ message: "Invalid or expired reset link" });
+
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpiry = undefined;
+  await user.save();
+
+  res.json({ message: "Password reset successful. Please login." });
+};
+
+// @PATCH /api/auth/change-password  (logged in user)
+const changePassword = async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user._id);
+  const isMatch = await user.matchPassword(oldPassword);
+  if (!isMatch) return res.status(400).json({ message: "Old password is incorrect" });
+
+  user.password = newPassword;
+  await user.save();
+
+  res.json({ message: "Password changed successfully" });
+};
+
+// @PATCH /api/auth/profile  (update name)
+const updateProfile = async (req, res) => {
+  const { name } = req.body;
+  const user = await User.findById(req.user._id);
+  if (name) user.name = name;
+  await user.save();
+  res.json({ _id: user._id, name: user.name, email: user.email, role: user.role });
+};
+
 module.exports = {
   registerUser, loginUser, getMe, getAllUsers,
   sendOTP, verifyOTP, googleAuthSuccess,
+  forgotPassword, resetPassword, changePassword, updateProfile,
 };

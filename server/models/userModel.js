@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema(
     },
     otp: { type: String },
     otpExpiry: { type: Date },
+
+    // For password reset:
+resetPasswordToken: { type: String },
+resetPasswordExpiry: { type: Date },
+
   },
   { timestamps: true }
 );
