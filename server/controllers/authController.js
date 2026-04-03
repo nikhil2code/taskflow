@@ -121,7 +121,7 @@ const googleAuthSuccess = async (req, res) => {
   res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
 };
 
-const crypto = require("crypto");
+
 
 // @POST /api/auth/forgot-password
 const forgotPassword = async (req, res) => {
