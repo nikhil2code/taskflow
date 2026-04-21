@@ -1,15 +1,34 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+const ROLE_LEVELS = {
+  admin: 5,
+  bod: 4,
+  manager: 3,
+  teamlead: 2,
+  employee: 1,
+};
+
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
+    phoneNo: { type: String },
+    gender: { type: String, enum: ["male", "female", "other"] },
     role: {
       type: String,
-      enum: ["manager", "teamlead", "employee"],
+      enum: ["admin", "bod", "manager", "teamlead", "employee"],
       default: "employee",
+    },
+    roleLevel: { type: Number, default: 1 },
+    reportsTo: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    reportsBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    accountApproved: { type: Boolean, default: false },
+    accountStatus: {
+      type: String,
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "INACTIVE",
     },
     googleId: { type: String },
     authMethod: {
@@ -19,19 +38,24 @@ const userSchema = new mongoose.Schema(
     },
     otp: { type: String },
     otpExpiry: { type: Date },
-
-    // For password reset:
-resetPasswordToken: { type: String },
-resetPasswordExpiry: { type: Date },
-
+    resetPasswordToken: { type: String },
+    resetPasswordExpiry: { type: Date },
+    inviteToken: { type: String },
+    inviteExpiry: { type: Date },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
+// Auto-set roleLevel from role
 userSchema.pre("save", async function () {
-  if (!this.isModified("password") || !this.password) return;
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  if (this.isModified("role")) {
+    this.roleLevel = ROLE_LEVELS[this.role] || 1;
+  }
+  if (this.isModified("password") && this.password) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
@@ -40,3 +64,4 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 module.exports = mongoose.model("User", userSchema);
+module.exports.ROLE_LEVELS = ROLE_LEVELS;

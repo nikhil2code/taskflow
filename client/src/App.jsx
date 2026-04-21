@@ -20,6 +20,15 @@ import AuthCallbackPage from "./pages/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
+import TeamsPage from "./pages/TeamsPage";
+import AcceptInvitePage from "./pages/AcceptInvitePage";
+import AuthSuccess from "./pages/AuthSuccess";
+import { SocketProvider } from "@/contexts/SocketContext";
+import PendingApproval from "./pages/PendingApproval";
+import AnalyticsPage from "./pages/AnalyticsPage";
+
+
 
 const queryClient = new QueryClient();
 
@@ -28,27 +37,39 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <AuthProvider>
-          <TaskProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-              <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-              <Route path="/my-tasks" element={<ProtectedRoute><MyTasksPage /></ProtectedRoute>} />
-              <Route path="/all-tasks" element={<ProtectedRoute><AllTasksPage /></ProtectedRoute>} />
-              <Route path="/create-task" element={<ProtectedRoute><CreateTaskPage /></ProtectedRoute>} />
-              <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
-              <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-              <Route path="/auth/callback" element={<AuthCallbackPage />} />
-              <Route path="*" element={<NotFound />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-
-            </Routes>
-          </TaskProvider>
+          <SocketProvider>
+            <TaskProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+                <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                <Route path="/my-tasks" element={<ProtectedRoute><MyTasksPage /></ProtectedRoute>} />
+                <Route path="/all-tasks" element={<ProtectedRoute><AllTasksPage /></ProtectedRoute>} />
+                <Route path="/create-task" element={<ProtectedRoute><CreateTaskPage /></ProtectedRoute>} />
+                <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/auth/success" element={<AuthSuccess />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+                <Route path="/teams" element={<ProtectedRoute><TeamsPage /></ProtectedRoute>} />
+                <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
+                <Route path="/pending-approval" element={<PendingApproval />} />
+                <Route path="*" element={<NotFound />} />
+                <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+              </Routes>
+            </TaskProvider>
+          </SocketProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

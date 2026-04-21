@@ -46,4 +46,23 @@ const sendOTPEmail = async (email, otp, resetURL = null, name = "") => {
   });
 };
 
-module.exports = { sendOTPEmail };
+const sendInviteEmail = async (email, inviteURL, inviterName) => {
+  await transporter.sendMail({
+    from: `"TaskFlow" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: `${inviterName} invited you to TaskFlow`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#6366f1">You're invited to TaskFlow</h2>
+        <p><strong>${inviterName}</strong> has invited you to join their team on TaskFlow.</p>
+        <a href="${inviteURL}" style="display:inline-block;margin:16px 0;padding:12px 28px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">
+          Accept Invite
+        </a>
+        <p style="color:#888">This invite expires in <strong>48 hours</strong>.</p>
+        <p style="color:#aaa;font-size:11px">Or copy: ${inviteURL}</p>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendOTPEmail, sendInviteEmail };

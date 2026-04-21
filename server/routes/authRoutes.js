@@ -1,34 +1,32 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("../config/passport");
-const {
-  registerUser, loginUser, getMe, getAllUsers,
-  sendOTP, verifyOTP, googleAuthSuccess,
-  forgotPassword, resetPassword, changePassword, updateProfile,
-} = require("../controllers/authController");
-
+const authController = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middleware/roleMiddleware");
 
-// routes:
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password/:token", resetPassword);
-router.patch("/change-password", protect, changePassword);
-router.patch("/profile", protect, updateProfile);
+router.post("/register", authController.registerUser);
+router.post("/login", authController.loginUser);
+router.get("/me", protect, authController.getMe);
+router.get("/users", protect, authController.getAllUsers);
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
-router.get("/me", protect, getMe);
-router.get("/users", protect, getAllUsers);
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password/:token", authController.resetPassword);
+router.patch("/change-password", protect, authController.changePassword);
+router.patch("/profile", protect, authController.updateProfile);
 
-// OTP routes
-router.post("/send-otp", sendOTP);
-router.post("/verify-otp", verifyOTP);
+// Pending registrations — BOD and above only
+router.get("/pending-registrations", protect, authorizeRoles("admin", "bod"), authController.getPendingRegistrations);
+router.patch("/approve-registration/:id", protect, authorizeRoles("admin", "bod"), authController.approveRegistration);
+router.patch("/reject-registration/:id", protect, authorizeRoles("admin", "bod"), authController.rejectRegistration);
 
-// Google OAuth routes
+router.post("/send-otp", authController.sendOTP);
+router.post("/verify-otp", authController.verifyOTP);
+
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }));
 router.get("/google/callback",
   passport.authenticate("google", { failureRedirect: `${process.env.CLIENT_URL}/login`, session: false }),
-  googleAuthSuccess
+  authController.googleAuthSuccess
 );
 
 module.exports = router;

@@ -14,7 +14,8 @@ export const AuthProvider = ({ children }) => {
         try {
           const { data } = await getMe();
           setUser(data);
-        } catch {
+        } catch (error) {
+          console.error('Error loading user:', error);
           localStorage.removeItem("token");
         }
       }
@@ -43,8 +44,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await getMe();
       setUser(data);
-    } catch {
+      return data;
+    } catch (error) {
+      console.error('Error fetching user with token:', error);
       localStorage.removeItem("token");
+      throw error;
     }
   };
 
@@ -53,7 +57,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-    return (
+  return (
     <AuthContext.Provider value={{ user, setUser, loading, login, register, loginWithToken, logout }}>
       {children}
     </AuthContext.Provider>
