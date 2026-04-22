@@ -65,4 +65,28 @@ const sendInviteEmail = async (email, inviteURL, inviterName) => {
   });
 };
 
-module.exports = { sendOTPEmail, sendInviteEmail };
+const sendReminderEmail = async (email, name, taskTitle, deadline) => {
+  await transporter.sendMail({
+    from: `"TaskFlow" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: `⚠️ Reminder: "${taskTitle}" is due tomorrow`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#f59e0b">Task Due Tomorrow</h2>
+        <p>Hi ${name},</p>
+        <p>This is a reminder that your task is due tomorrow:</p>
+        <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:4px;margin:16px 0">
+          <strong>${taskTitle}</strong><br/>
+          <span style="color:#92400e;font-size:13px">
+            Due: ${new Date(deadline).toLocaleDateString("en-US", {
+              weekday: "long", year: "numeric", month: "long", day: "numeric"
+            })}
+          </span>
+        </div>
+        <p style="color:#888;font-size:12px">Login to TaskFlow to update your progress.</p>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendOTPEmail, sendInviteEmail, sendReminderEmail };

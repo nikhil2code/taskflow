@@ -170,28 +170,54 @@ const rejectTask = async (req, res) => {
 // @POST /api/tasks/:id/comments
 const addComment = async (req, res) => {
   const io = req.app.get("io");
-  const { text } = req.body;
+  const { text, mentions } = req.body;
 
   const task = await Task.findById(req.params.id);
   if (!task) return res.status(404).json({ message: "Task not found" });
 
-  task.comments.push({ user: req.user._id, text });
+  task.comments.push({
+    user: req.user._id,
+    text,
+    mentions: mentions || [],
+  });
   await task.save();
 
-  const notifyUserId = req.user._id.toString() === task.assignedTo?.toString()
-    ? task.assignedBy
-    : task.assignedTo;
+  // Notify the other party
+  const notifyUserId =
+    req.user._id.toString() === task.assignedTo?.toString()
+      ? task.assignedBy
+      : task.assignedTo;
 
   if (notifyUserId) {
     await Notification.create({
       userId: notifyUserId,
-      message: `New comment on task "${task.title}"`,
+      message: `💬 New comment on task "${task.title}"`,
       type: "comment",
       taskId: task._id,
     });
     io.to(notifyUserId.toString()).emit("notification:new", {
-      message: `New comment on task "${task.title}"`,
+      message: `💬 New comment on task "${task.title}"`,
     });
+  }
+
+  // Notify mentioned users
+  if (mentions && mentions.length > 0) {
+    for (const mentionedId of mentions) {
+      if (
+        mentionedId.toString() !== req.user._id.toString() &&
+        mentionedId.toString() !== notifyUserId?.toString()
+      ) {
+        await Notification.create({
+          userId: mentionedId,
+          message: `🔔 ${req.user.name} mentioned you in task "${task.title}"`,
+          type: "comment",
+          taskId: task._id,
+        });
+        io.to(mentionedId.toString()).emit("notification:new", {
+          message: `🔔 ${req.user.name} mentioned you in "${task.title}"`,
+        });
+      }
+    }
   }
 
   await emitTaskUpdate(io, task);

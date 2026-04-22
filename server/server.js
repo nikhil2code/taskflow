@@ -6,9 +6,11 @@ const { Server } = require("socket.io");
 const passport = require("./config/passport");
 const connectDB = require("./config/db");
 const seedAdmin = require("./utils/seedAdmin");
+const startCronJobs = require("./utils/cronJobs");
 
 dotenv.config();
 connectDB();
+
 connectDB().then(() => seedAdmin());
 
 const app = express();
@@ -42,17 +44,17 @@ app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
-
   // User joins their own room using their userId
   socket.on("join", (userId) => {
     socket.join(userId);
     console.log(`User ${userId} joined room`);
   });
-
+  
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
 });
+startCronJobs(io);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
