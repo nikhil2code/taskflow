@@ -21,7 +21,7 @@ router.patch("/approve-registration/:id", protect, authorizeRoles("admin", "bod"
 router.patch("/reject-registration/:id", protect, authorizeRoles("admin", "bod"), authController.rejectRegistration);
 
 router.post("/send-otp", authController.sendOTP);
-router.post("/verify-otp", authController.verifyOTP);
+router.post("/verify-otp", authController.verifyTwoFactor);
 
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }));
 router.get("/google/callback",

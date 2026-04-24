@@ -20,6 +20,3 @@ export const deleteAttachment = (id, attachmentId) =>
 
 export const updateTags = (id, tags) =>
   API.patch(`/tasks/${id}/tags`, { tags });
-
-export const addComment = (id, data) =>
-  API.post(`/tasks/${id}/comments`, data);

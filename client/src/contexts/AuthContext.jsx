@@ -26,10 +26,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const { data } = await loginUser({ email, password });
+    if (data.requiresTwoFactor) return data; // return flag
     localStorage.setItem("token", data.token);
     setUser(data);
     return data;
-  };
+};
 
   const register = async (name, email, password, role) => {
     const { data } = await registerUser({ name, email, password, role });
