@@ -34,4 +34,19 @@ router.delete("/users/:id", deleteUser);
 // Invites
 router.post("/invite", sendInvite);
 
+
+const { seedDummyData, removeDummyData } = require("../utils/seedDummyData");
+
+// Seed dummy data — admin only
+router.post("/seed-dummy", protect, authorizeRoles("admin"), async (req, res) => {
+  await seedDummyData();
+  res.json({ message: "Dummy data seeded successfully" });
+});
+
+// Remove dummy data — admin only
+router.delete("/seed-dummy", protect, authorizeRoles("admin"), async (req, res) => {
+  await removeDummyData();
+  res.json({ message: "Dummy data removed successfully" });
+});
+
 module.exports = router;
